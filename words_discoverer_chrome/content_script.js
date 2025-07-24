@@ -531,7 +531,23 @@ function initForPage() {
             document.body.appendChild(bubbleDOM);
             document.addEventListener('mousedown', hideBubble(true), false);
             document.addEventListener('mousemove', processMouse, false);
-            document.addEventListener("DOMNodeInserted", onNodeInserted, false);
+            // Use MutationObserver instead of deprecated DOMNodeInserted
+            var observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList') {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === Node.ELEMENT_NODE) {
+                                onNodeInserted({target: node});
+                            }
+                        });
+                    }
+                });
+            });
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+            
             window.addEventListener('scroll', function () {
                 node_to_render_id = null;
                 hideBubble(true);
