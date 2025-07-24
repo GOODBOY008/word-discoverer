@@ -1,11 +1,11 @@
 {
   "appName": {
-    "message": "वर्ड डिस्कवर्र: अपनी शब्दावली बढ़ाएं",
-    "description": "The title of the application, displayed in the web store."
+      "message": "वर्ड डिस्कवर्र: अपनी शब्दावली बढ़ाएं (Maintained Fork)",
+      "description": "The title of the application, displayed in the web store. This is a maintained fork."
   },
   "appDesc": {
-    "message": "वेबपेज पर अंग्रेजी शब्दकोश के दुर्लभ शब्द और मुहावरों को हाइलाइट करता है। अंग्रेजी भाषा सीखना सहज बनाता है और आपकी शब्दावली को बढ़ाता है।",
-    "description": "The description of the application, displayed in the web store."
+      "message": "वेबपेज पर दुर्लभ अंग्रेजी शब्द और मुहावरे हाइलाइट करता है। (Actively maintained fork with new features and improvements.)",
+      "description": "The description of the application, displayed in the web store. This is a maintained fork."
   },
   "menuItem": {
     "message": "शब्दावली में जोड़ें",

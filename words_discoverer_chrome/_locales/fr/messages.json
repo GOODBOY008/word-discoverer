@@ -1,11 +1,11 @@
 {
   "appName": {
-    "message": "Word Discoverer : Développez votre vocabulaire",
-    "description": "The title of the application, displayed in the web store. Note to the translator: Do not translate first two words 'Words Discoverer'"
+      "message": "Word Discoverer : Développez votre vocabulaire (Maintained Fork)",
+      "description": "The title of the application, displayed in the web store. Note to the translator: Do not translate first two words 'Words Discoverer'. This is a maintained fork."
   },
   "appDesc": {
-    "message": "Surligne les mots et les expressions rares du dictionnaire anglais sur les pages Web. Facilite l’apprentissage de la langue anglaise et élargit votre vocabulaire.",
-    "description": "The description of the application, displayed in the web store."
+      "message": "Surligne les mots et expressions rares en anglais. (Actively maintained fork with new features and improvements.)",
+      "description": "The description of the application, displayed in the web store. This is a maintained fork."
   },
   "menuItem": {
     "message": "Ajouter au vocabulaire",

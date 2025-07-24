@@ -1,11 +1,11 @@
 {
   "appName": {
-    "message": "単語発見。あなたの語彙を増強します",
-    "description": "The title of the application, displayed in the web store."
+      "message": "単語発見。あなたの語彙を増強します (Maintained Fork)",
+      "description": "The title of the application, displayed in the web store. This is a maintained fork."
   },
   "appDesc": {
-    "message": "Webページ上のまれな英語の辞書の単語や熟語をハイライトします。英語学習を容易にし、あなたの語彙を増強します。",
-    "description": "The description of the application, displayed in the web store."
+      "message": "Webページ上のまれな英単語や熟語をハイライトします。(Actively maintained fork with new features and improvements.)",
+      "description": "The description of the application, displayed in the web store. This is a maintained fork."
   },
   "menuItem": {
     "message": "語彙に追加",

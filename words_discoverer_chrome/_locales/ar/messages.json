@@ -1,11 +1,11 @@
 {
   "appName": {
-    "message": "Word Discoverer: وسع مفرداتك",
-    "description": "The title of the application, displayed in the web store. Note to the translator: Do not translate first two words 'Words Discoverer'"
+      "message": "Word Discoverer: وسع مفرداتك (Maintained Fork)",
+      "description": "The title of the application, displayed in the web store. Note to the translator: Do not translate first two words 'Words Discoverer'. This is a maintained fork."
   },
   "appDesc": {
-    "message": "يظلل الكلمات والعبارات النادرة بالقاموس الموجودة على صفحات الويب ما ييسر تعلم اللغة الإنجليزية ويسوع المفردات.",
-    "description": "The description of the application, displayed in the web store."
+      "message": "يظلل الكلمات والعبارات النادرة بالقاموس على صفحات الويب. (Actively maintained fork with new features and improvements.)",
+      "description": "The description of the application, displayed in the web store. This is a maintained fork."
   },
   "menuItem": {
     "message": "إضافة إلى المفردات",

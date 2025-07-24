@@ -1,11 +1,11 @@
 {
   "appName": {
-    "message": "Word Discoverer: Пополни словарный запас.",
-    "description": "The title of the application, displayed in the web store."
+      "message": "Word Discoverer: Пополни словарный запас. (Maintained Fork)",
+      "description": "The title of the application, displayed in the web store. This is a maintained fork."
   },
   "appDesc": {
-    "message": "Подсвечивает редкие слова и идиомы английского языка на веб страницах. Расширяет словарный запас и помогает учить английский.",
-    "description":"The description of the application, displayed in the web store."
+      "message": "Подсвечивает редкие английские слова и идиомы. (Actively maintained fork with new features and improvements.)",
+      "description":"The description of the application, displayed in the web store. This is a maintained fork."
   },
   "menuItem": {
     "message": "Добавить в список выученных",

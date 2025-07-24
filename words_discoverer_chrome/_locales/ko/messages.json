@@ -1,11 +1,11 @@
 {
   "appName": {
-    "message": "Word Discoverer: 어휘력을 늘리세요.",
-    "description": "The title of the application, displayed in the web store. Note to the translator: Do not translate first two words 'Words Discoverer'"
+      "message": "Word Discoverer: 어휘력을 늘리세요. (Maintained Fork)",
+      "description": "The title of the application, displayed in the web store. Note to the translator: Do not translate first two words 'Words Discoverer'. This is a maintained fork."
   },
   "appDesc": {
-    "message": "잘 안나오는 영어 사전 단어와 숙어를 웹페이지에서 강조표시합니다. 영어 학습을 촉진하고 어휘력을 향상시킵니다.",
-    "description": "The description of the application, displayed in the web store."
+      "message": "웹페이지에서 희귀 영어 단어와 숙어를 강조표시합니다. (Actively maintained fork with new features and improvements.)",
+      "description": "The description of the application, displayed in the web store. This is a maintained fork."
   },
   "menuItem": {
     "message": "어휘사전에 추가",

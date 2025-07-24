@@ -1,13 +1,4 @@
-Words Discoverer surligne les mots, locutions et proverbes rares du dictionnaire anglais sur les pages Web.
-L’appli aide les personnes apprenant l’anglais à découvrir de nouvelles expressions lors de leur navigation sur Internet. 
-
-Words Discoverer est gratuit, open source et ne contient pas de pubs.
-
-Certaines fonctionnalités de l'extension :
-
-Words Discoverer est mieux que le type de programmes « Mot du jour », car les nouveaux mots sont surlignés en contexte dans le texte que vous avez lu, ce qui est un bon facteur de motivation pour enfin vérifier les définitions et apprendre des mots (ou expressions).
-
-En fonction de la taille de votre vocabulaire, vous pouvez régler la fréquence des mots surlignés, par exemple sauter 25 % des mots anglais les plus courants et surligner tout le reste. 
+Actively maintained fork of Word Discoverer. New features, fixes, and improvements. Not affiliated with the original author.
 
 Si vous connaissez la définition d’un mot surligné, vous pouvez l’ajouter à votre vocabulaire personnel et il ne sera plus détecté. 
 

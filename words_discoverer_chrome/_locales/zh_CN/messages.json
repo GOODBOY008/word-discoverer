@@ -1,11 +1,11 @@
 {
   "appName": {
-    "message": "单词发现者：扩大您的词汇",
-    "description": "The title of the application, displayed in the web store."
+    "message": "单词发现者：扩大您的词汇 (Maintained Fork)",
+    "description": "The title of the application, displayed in the web store. This is a maintained fork."
   },
   "appDesc": {
-    "message": "突出显示网页上罕见的英语字典词汇和惯用语。促进英语语言学习并扩大词汇量。",
-    "description": "The description of the application, displayed in the web store."
+    "message": "突出显示网页上罕见的英语单词和习语。(Actively maintained fork with new features and improvements.)",
+    "description": "The description of the application, displayed in the web store. This is a maintained fork."
   },
   "menuItem": {
     "message": "添加到词汇",

@@ -1,11 +1,11 @@
 {
   "appName": {
-    "message": "Word Discoverer: Erweitern Sie Ihren Wortschatz (Wort-Entdecker)",
-    "description": "The title of the application, displayed in the web store."
+      "message": "Word Discoverer: Erweitern Sie Ihren Wortschatz (Maintained Fork)",
+      "description": "The title of the application, displayed in the web store. This is a maintained fork."
   },
   "appDesc": {
-    "message": "Markiert seltene Wörter und Redewendungen aus dem Englisch-Wörterbuch auf Webseiten. Erleichtert das Erlernen der englischen Sprache - und Sie erweitern Ihren Wortschatz.",
-    "description": "The description of the application, displayed in the web store."
+      "message": "Markiert seltene englische Wörter und Redewendungen. (Actively maintained fork with new features and improvements.)",
+      "description": "The description of the application, displayed in the web store. This is a maintained fork."
   },
   "menuItem": {
     "message": "In dem Wortschatz",
