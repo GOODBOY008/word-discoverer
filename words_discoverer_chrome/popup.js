@@ -3,48 +3,54 @@ var enabled_mode = true;
 
 
 function display_mode() {
-    chrome.tabs.getSelected(null, function (tab) {
-        var url = new URL(tab.url);
-        var domain = url.hostname;
-        document.getElementById("addHostName").textContent = domain;
-        if (enabled_mode) {
-            document.getElementById("rb_enabled").checked = true; 
-            document.getElementById("addToListLabel").textContent = chrome.i18n.getMessage("addSkippedLabel");
-            document.getElementById("addToListLabel").href = chrome.extension.getURL('black_list.html');
-            chrome.storage.local.get(["wd_black_list",], function(result) {
-                var black_list = result.wd_black_list;
-                document.getElementById("addToList").checked = black_list.hasOwnProperty(domain);
-            });
-        } else {
-            document.getElementById("rb_disabled").checked = true; 
-            document.getElementById("addToListLabel").textContent = chrome.i18n.getMessage("addFavoritesLabel");
-            document.getElementById("addToListLabel").href = chrome.extension.getURL('white_list.html');
-            chrome.storage.local.get(["wd_white_list",], function(result) {
-                var white_list = result.wd_white_list;
-                document.getElementById("addToList").checked = white_list.hasOwnProperty(domain);
-            });
+    chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+        if (tabs.length > 0) {
+            var tab = tabs[0];
+            var url = new URL(tab.url);
+            var domain = url.hostname;
+            document.getElementById("addHostName").textContent = domain;
+            if (enabled_mode) {
+                document.getElementById("rb_enabled").checked = true; 
+                document.getElementById("addToListLabel").textContent = chrome.i18n.getMessage("addSkippedLabel");
+                document.getElementById("addToListLabel").href = chrome.runtime.getURL('black_list.html');
+                chrome.storage.local.get(["wd_black_list",], function(result) {
+                    var black_list = result.wd_black_list;
+                    document.getElementById("addToList").checked = black_list.hasOwnProperty(domain);
+                });
+            } else {
+                document.getElementById("rb_disabled").checked = true; 
+                document.getElementById("addToListLabel").textContent = chrome.i18n.getMessage("addFavoritesLabel");
+                document.getElementById("addToListLabel").href = chrome.runtime.getURL('white_list.html');
+                chrome.storage.local.get(["wd_white_list",], function(result) {
+                    var white_list = result.wd_white_list;
+                    document.getElementById("addToList").checked = white_list.hasOwnProperty(domain);
+                });
+            }
         }
     });
 }
 
 function process_checkbox() {
     checkboxElem = document.getElementById("addToList");
-    chrome.tabs.getSelected(null, function (tab) {
-        var url = new URL(tab.url);
-        var domain = url.hostname;
-        document.getElementById("addHostName").textContent = domain;
-        var list_name = enabled_mode ? "wd_black_list" : "wd_white_list";
-        chrome.storage.local.get([list_name], function(result) {
-            var site_list = result[list_name];
-            if (checkboxElem.checked) {
-                site_list[domain] = 1;
-            } else {
-                delete site_list[domain];
-            }
-            chrome.storage.local.set({[list_name]: site_list}, function() {
-                display_mode();
+    chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+        if (tabs.length > 0) {
+            var tab = tabs[0];
+            var url = new URL(tab.url);
+            var domain = url.hostname;
+            document.getElementById("addHostName").textContent = domain;
+            var list_name = enabled_mode ? "wd_black_list" : "wd_white_list";
+            chrome.storage.local.get([list_name], function(result) {
+                var site_list = result[list_name];
+                if (checkboxElem.checked) {
+                    site_list[domain] = 1;
+                } else {
+                    delete site_list[domain];
+                }
+                chrome.storage.local.set({[list_name]: site_list}, function() {
+                    display_mode();
+                });
             });
-        });
+        }
     });
 }
 
@@ -60,19 +66,19 @@ function process_mode_switch() {
 }
 
 function process_show() {
-    chrome.tabs.create({'url': chrome.extension.getURL('display.html')}, function(tab) {
+    chrome.tabs.create({'url': chrome.runtime.getURL('display.html')}, function(tab) {
       // opens import dialong in new tab
     });
 }
 
 function process_help() {
-    chrome.tabs.create({'url': chrome.extension.getURL('help.html')}, function(tab) {
+    chrome.tabs.create({'url': chrome.runtime.getURL('help.html')}, function(tab) {
       // opens import dialong in new tab
     });
 }
 
 function process_adjust() {
-    chrome.tabs.create({'url': chrome.extension.getURL('adjust.html')}, function(tab) {
+    chrome.tabs.create({'url': chrome.runtime.getURL('adjust.html')}, function(tab) {
       // opens adjust dialong in new tab
     });
 }

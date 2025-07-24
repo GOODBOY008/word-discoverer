@@ -27,15 +27,11 @@ function do_load_dictionary(file_text) {
 
 
 function load_eng_dictionary() {
-    var file_path = chrome.extension.getURL("eng_dict.txt");
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState == XMLHttpRequest.DONE) {
-            do_load_dictionary(xhr.responseText);
-        }
-    }
-    xhr.open('GET', file_path, true);
-    xhr.send(null);
+    var file_path = chrome.runtime.getURL("eng_dict.txt");
+    fetch(file_path)
+        .then(response => response.text())
+        .then(text => do_load_dictionary(text))
+        .catch(error => console.error('Error loading dictionary:', error));
 }
 
 
@@ -60,15 +56,11 @@ function do_load_idioms(file_text) {
 
 
 function load_idioms() {
-    file_path = chrome.extension.getURL("eng_idioms.txt");
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState == XMLHttpRequest.DONE) {
-            do_load_idioms(xhr.responseText);
-        }
-    }
-    xhr.open('GET', file_path, true);
-    xhr.send(null);
+    file_path = chrome.runtime.getURL("eng_idioms.txt");
+    fetch(file_path)
+        .then(response => response.text())
+        .then(text => do_load_idioms(text))
+        .catch(error => console.error('Error loading idioms:', error));
 }
 
 
@@ -80,17 +72,20 @@ function report_sync_failure(error_msg) {
 
 
 function load_script(url, callback_func) {
-    var request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState !== 4)
-            return;
-        if (request.status !== 200)
-            return;
-        eval(request.responseText);
-        callback_func();
-    };
-    request.open('GET', url);
-    request.send();
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(text => {
+            eval(text);
+            callback_func();
+        })
+        .catch(error => {
+            console.error('Error loading script:', error);
+        });
 }
 
 
@@ -416,17 +411,17 @@ function initialize_extension() {
         } else if (request.wdm_verdict) {
             if (request.wdm_verdict == "highlight") {
                 chrome.storage.local.get(['wd_gd_sync_enabled', 'wd_last_sync_error'], function (result) {
-                    chrome.browserAction.setIcon({path: "result48.png", tabId: sender.tab.id}, function () {
+                    chrome.action.setIcon({path: "result48.png", tabId: sender.tab.id}, function () {
                         if (result.wd_gd_sync_enabled) {
                             if (result.wd_last_sync_error == null) {
-                                chrome.browserAction.setBadgeText({text: 'sync', tabId: sender.tab.id});
-                                chrome.browserAction.setBadgeBackgroundColor({
+                                chrome.action.setBadgeText({text: 'sync', tabId: sender.tab.id});
+                                chrome.action.setBadgeBackgroundColor({
                                     color: [25, 137, 0, 255],
                                     tabId: sender.tab.id
                                 });
                             } else {
-                                chrome.browserAction.setBadgeText({text: 'err', tabId: sender.tab.id});
-                                chrome.browserAction.setBadgeBackgroundColor({
+                                chrome.action.setBadgeText({text: 'err', tabId: sender.tab.id});
+                                chrome.action.setBadgeBackgroundColor({
                                     color: [137, 0, 0, 255],
                                     tabId: sender.tab.id
                                 });
@@ -435,9 +430,9 @@ function initialize_extension() {
                     });
                 });
             } else if (request.wdm_verdict == "keyboard") {
-                chrome.browserAction.setIcon({path: "no_dynamic.png", tabId: sender.tab.id});
+                chrome.action.setIcon({path: "no_dynamic.png", tabId: sender.tab.id});
             } else {
-                chrome.browserAction.setIcon({path: "result48_gray.png", tabId: sender.tab.id});
+                chrome.action.setIcon({path: "result48_gray.png", tabId: sender.tab.id});
             }
         } else if (request.wdm_new_tab_url) {
             var fullUrl = request.wdm_new_tab_url;

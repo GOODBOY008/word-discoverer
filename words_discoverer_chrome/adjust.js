@@ -131,7 +131,7 @@ function process_export() {
 
 
 function process_import() {
-    chrome.tabs.create({'url': chrome.extension.getURL('import.html')}, function (tab) {
+    chrome.tabs.create({'url': chrome.runtime.getURL('import.html')}, function (tab) {
     });
 }
 
@@ -410,7 +410,7 @@ function process_display() {
             document.getElementById("addDict").addEventListener("click", process_add_dict);
             document.getElementById("testNewDict").addEventListener("click", process_test_new_dict);
 
-            document.getElementById("moreInfoLink").href = chrome.extension.getURL('sync_help.html');
+            document.getElementById("moreInfoLink").href = chrome.runtime.getURL('sync_help.html');
 
             document.getElementById("saveVisuals").addEventListener("click", function () {
                 chrome.storage.local.set({'wd_hl_settings': wd_hl_settings});
