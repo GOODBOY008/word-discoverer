@@ -159,6 +159,14 @@
         font-size: 14px;
         margin: 4px 20px;
     }
+    .settingRow {
+        margin: 8px 0;
+    }
+    .infoMsg {
+        font-size: 12px;
+        color: #666;
+        margin-left: 10px;
+    }
     </style>
     <title>Advanced Settings</title>
     <script src="common_lib.js"></script>
@@ -203,6 +211,47 @@
       <fieldset>
           <span class="smallHeader">Adjust Pronunciation</span><br>
           <input type="checkbox" id="pronunciationEnabled"/>Enable Auto Pronunciation
+      </fieldset>
+  </div>
+  
+  <!--translation section-->
+  <div id="adjustTranslationSection">
+      <fieldset>
+          <legend>Translation Settings</legend>
+          
+          <div class="settingRow">
+              <input type="checkbox" id="translation_enabled">
+              <label for="translation_enabled">Enable hover translation</label>
+          </div>
+          
+          <div class="settingRow">
+              <label for="translation_language">Target language:</label>
+              <select id="translation_language">
+                  <option value="auto">Auto-detect from browser</option>
+                  <option value="es">Spanish</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                  <option value="it">Italian</option>
+                  <option value="pt">Portuguese</option>
+                  <option value="ru">Russian</option>
+                  <option value="ja">Japanese</option>
+                  <option value="ko">Korean</option>
+                  <option value="zh">Chinese</option>
+                  <!-- Add more languages as needed -->
+              </select>
+          </div>
+          
+          <div class="settingRow">
+              <input type="radio" name="translation_trigger" id="trigger_hover" value="hover">
+              <label for="trigger_hover">Translate on hover</label>
+              <input type="radio" name="translation_trigger" id="trigger_click" value="click">
+              <label for="trigger_click">Translate on click</label>
+          </div>
+          
+          <div class="settingRow">
+              <button id="clear_translation_cache" class="longButton">Clear Translation Cache</button>
+              <span id="cache_info" class="infoMsg"></span>
+          </div>
       </fieldset>
   </div>
   <br>

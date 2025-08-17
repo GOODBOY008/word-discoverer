@@ -2,6 +2,7 @@ var wd_hl_settings = null;
 var wd_hover_settings = null;
 var wd_online_dicts = null;
 var wd_enable_tts = false;
+var wd_translation_settings = null;
 
 var wc_rb_ids = ['wc1', 'wc2', 'wc3', 'wc4', 'wc5'];
 var ic_rb_ids = ['ic1', 'ic2', 'ic3', 'ic4', 'ic5'];
@@ -269,6 +270,18 @@ function show_internal_state() {
 
     document.getElementById("pronunciationEnabled").checked = wd_enable_tts;
 
+    // Translation settings
+    if (wd_translation_settings) {
+        document.getElementById("translation_enabled").checked = wd_translation_settings.enabled;
+        document.getElementById("translation_language").value = wd_translation_settings.target_language || 'auto';
+        
+        if (wd_translation_settings.trigger_mode === 'hover') {
+            document.getElementById("trigger_hover").checked = true;
+        } else {
+            document.getElementById("trigger_click").checked = true;
+        }
+    }
+
     document.getElementById("wcRadioBlock").style.display = word_hl_params.useColor ? "block" : "none";
     show_rb_states(wc_rb_ids, word_hl_params.color);
     document.getElementById("icRadioBlock").style.display = idiom_hl_params.useColor ? "block" : "none";
@@ -289,6 +302,7 @@ function show_internal_state() {
     highlight_example_text(word_hl_params, "wordHlText", "wql", "wqr");
     highlight_example_text(idiom_hl_params, "idiomHlText", "iql", "iqr");
     show_user_dicts();
+    updateCacheInfo();
 }
 
 
@@ -363,14 +377,77 @@ function add_hover_rb_listeners() {
 }
 
 
+function loadTranslationSettings() {
+    chrome.storage.local.get(['wd_translation_settings'], function(result) {
+        wd_translation_settings = result.wd_translation_settings || {
+            enabled: true,
+            target_language: 'auto',
+            trigger_mode: 'hover',
+            show_attribution: true,
+            cache_duration: 86400000,
+            max_cache_size: 1000
+        };
+        
+        document.getElementById('translation_enabled').checked = wd_translation_settings.enabled;
+        document.getElementById('translation_language').value = wd_translation_settings.target_language;
+        
+        if (wd_translation_settings.trigger_mode === 'hover') {
+            document.getElementById('trigger_hover').checked = true;
+        } else {
+            document.getElementById('trigger_click').checked = true;
+        }
+        
+        updateCacheInfo();
+    });
+}
+
+function saveTranslationSettings() {
+    const settings = {
+        enabled: document.getElementById('translation_enabled').checked,
+        target_language: document.getElementById('translation_language').value,
+        trigger_mode: document.querySelector('input[name="translation_trigger"]:checked').value,
+        show_attribution: true,
+        cache_duration: 86400000,
+        max_cache_size: 1000
+    };
+    
+    chrome.storage.local.set({'wd_translation_settings': settings}, function() {
+        console.log('Translation settings saved');
+    });
+}
+
+function clearTranslationCache() {
+    chrome.storage.local.remove(['wd_translation_cache'], function() {
+        updateCacheInfo();
+        alert('Translation cache cleared!');
+    });
+}
+
+function updateCacheInfo() {
+    chrome.storage.local.get(['wd_translation_cache'], function(result) {
+        const cache = result.wd_translation_cache || {};
+        const count = Object.keys(cache).length;
+        document.getElementById('cache_info').textContent = 
+            `Cache contains ${count} translations`;
+    });
+}
+
 function process_display() {
     window.onload = function () {
-        chrome.storage.local.get(["wd_hl_settings", "wd_hover_settings", "wd_online_dicts", "wd_developer_mode", "wd_enable_tts"], function (result) {
+        chrome.storage.local.get(["wd_hl_settings", "wd_hover_settings", "wd_online_dicts", "wd_developer_mode", "wd_enable_tts", "wd_translation_settings"], function (result) {
             assign_back_labels();
             wd_hl_settings = result.wd_hl_settings;
             wd_hover_settings = result.wd_hover_settings;
             wd_online_dicts = result.wd_online_dicts;
             wd_enable_tts = result.wd_enable_tts ? true : false;
+            wd_translation_settings = result.wd_translation_settings || {
+                enabled: true,
+                target_language: 'auto',
+                trigger_mode: 'hover',
+                show_attribution: true,
+                cache_duration: 86400000,
+                max_cache_size: 1000
+            };
 
             var wd_developer_mode = result.wd_developer_mode;
 
@@ -427,6 +504,14 @@ function process_display() {
                 wd_enable_tts = e.target.checked;
                 chrome.storage.local.set({"wd_enable_tts": wd_enable_tts});
             });
+
+            // Translation settings event listeners
+            document.getElementById('translation_enabled').addEventListener('change', saveTranslationSettings);
+            document.getElementById('translation_language').addEventListener('change', saveTranslationSettings);
+            document.querySelectorAll('input[name="translation_trigger"]').forEach(el => {
+                el.addEventListener('change', saveTranslationSettings);
+            });
+            document.getElementById('clear_translation_cache').addEventListener('click', clearTranslationCache);
 
             display_sync_interface();
             show_internal_state();

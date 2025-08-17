@@ -9,6 +9,16 @@ var wd_hl_settings = null;
 var wd_hover_settings = null;
 var wd_online_dicts = null;
 var wd_enable_tts = null;
+var wd_translation_settings = null;
+
+// Translation debouncing
+let translationTimeout;
+const TRANSLATION_DELAY = 500; // 500ms delay
+
+// Simple delay function
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 var disable_by_keypress = false;
 
@@ -71,6 +81,223 @@ function limit_text_len(word) {
     return word.slice(0, max_len) + "...";
 }
 
+/**
+ * Translate text using Google Translate API
+ * @param {string} text - Text to translate
+ * @param {string} targetLang - Target language code (default: auto-detect from UI)
+ * @param {string} sourceLang - Source language (default: 'en')
+ * @returns {Promise<string|null>} Translated text or null if failed
+ */
+async function translateText(text, targetLang = 'auto', sourceLang = 'en') {
+    const cacheKey = `translate_${sourceLang}_${targetLang}_${text}`;
+    
+    // Check cache first
+    const cached = await getTranslationFromCache(cacheKey);
+    if (cached && cached.timestamp > Date.now() - 86400000) { // 24h cache
+        console.log('Returning cached translation for:', text);
+        return cached.translation;
+    }
+    
+    try {
+        console.log('Making translation request for:', text, 'to language:', targetLang);
+        // Add a small delay to avoid rate limiting
+        await delay(100);
+        
+        // Use a more reliable endpoint without Content-Type header to avoid CORS issues
+        const url = `https://translate.googleapis.com/translate_a/single?` +
+            `client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+        
+        const response = await fetch(url, {
+            method: 'GET'
+            // Removed headers to avoid CORS issues
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Raw translation response:', data);
+        
+        // Handle different response formats more robustly
+        let translation = '';
+        if (data && Array.isArray(data) && data.length > 0) {
+            // Format: [[["translation", ...]], ...]
+            if (Array.isArray(data[0])) {
+                for (const item of data[0]) {
+                    if (Array.isArray(item) && item.length > 0 && typeof item[0] === 'string') {
+                        translation += item[0];
+                    }
+                }
+            }
+            // Format: ["translation", ...] (less common)
+            else if (typeof data[0] === 'string') {
+                translation = data[0];
+            }
+            // Handle empty array case
+            else if (data[0] === null) {
+                // Check if there are other valid entries
+                for (let i = 1; i < data.length; i++) {
+                    if (data[i] && Array.isArray(data[i]) && data[i].length > 0) {
+                        translation = data[i][0];
+                        break;
+                    }
+                }
+            }
+        }
+        
+        console.log('Parsed translation:', translation);
+        
+        if (translation && translation.trim()) {
+            // Cache the result
+            await cacheTranslation(cacheKey, translation);
+            return translation;
+        } else {
+            throw new Error('Empty or invalid translation result');
+        }
+        
+    } catch (error) {
+        console.log('Translation failed:', error);
+        return null;
+    }
+}
+
+/**
+ * Fallback translation method using different approach
+ * @param {string} text - Text to translate
+ * @param {string} targetLang - Target language code
+ * @param {string} sourceLang - Source language (default: 'en')
+ * @returns {Promise<string|null>} Translated text or null if failed
+ */
+async function translateTextFallback(text, targetLang = 'auto', sourceLang = 'en') {
+    const cacheKey = `translate_fallback_${sourceLang}_${targetLang}_${text}`;
+    
+    // Check cache first
+    const cached = await getTranslationFromCache(cacheKey);
+    if (cached && cached.timestamp > Date.now() - 86400000) { // 24h cache
+        console.log('Returning cached fallback translation for:', text);
+        return cached.translation;
+    }
+    
+    try {
+        console.log('Making fallback translation request for:', text, 'to language:', targetLang);
+        // Add a small delay to avoid rate limiting
+        await delay(100);
+        
+        // Alternative approach using a different endpoint format without problematic headers
+        const url = `https://translate.googleapis.com/translate_a/single?` +
+            `client=dict-chrome-ex&sl=${sourceLang}&tl=${targetLang}&q=${encodeURIComponent(text)}`;
+        
+        const response = await fetch(url, {
+            method: 'GET'
+            // Removed headers to avoid CORS issues
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Raw fallback translation response:', data);
+        
+        // Handle different response formats more robustly
+        let translation = '';
+        if (data) {
+            // Format with sentences array
+            if (data.sentences && Array.isArray(data.sentences)) {
+                translation = data.sentences.map(sentence => {
+                    return sentence.trans || sentence.orig || '';
+                }).join('');
+            }
+            // Format: ["translation", ...]
+            else if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'string') {
+                translation = data[0];
+            }
+            // Format: [["translation", ...], ...]
+            else if (Array.isArray(data) && data.length > 0 && Array.isArray(data[0]) && data[0].length > 0) {
+                translation = data[0][0];
+            }
+            // Handle the specific case we saw in the logs: [null, null, '', null, null, null, null, []]
+            else if (Array.isArray(data)) {
+                // Look for any valid string translations in the array
+                for (const item of data) {
+                    if (typeof item === 'string' && item.trim()) {
+                        translation = item;
+                        break;
+                    } else if (Array.isArray(item) && item.length > 0 && typeof item[0] === 'string') {
+                        translation = item[0];
+                        break;
+                    }
+                }
+            }
+        }
+        
+        console.log('Parsed fallback translation:', translation);
+        
+        if (translation && translation.trim()) {
+            // Cache the result
+            await cacheTranslation(cacheKey, translation);
+            return translation;
+        } else {
+            throw new Error('Empty or invalid fallback translation result');
+        }
+        
+    } catch (error) {
+        console.log('Fallback translation failed:', error);
+        return null;
+    }
+}
+
+/**
+ * Cache translation result
+ */
+async function cacheTranslation(key, translation) {
+    try {
+        const cacheData = {
+            translation: translation,
+            timestamp: Date.now()
+        };
+        
+        // Get existing cache
+        const result = await chrome.storage.local.get(['wd_translation_cache']);
+        const cache = result.wd_translation_cache || {};
+        
+        console.log('Caching translation for key:', key);
+        // Add new translation
+        cache[key] = cacheData;
+        
+        // Limit cache size (keep last 1000 translations)
+        const keys = Object.keys(cache);
+        if (keys.length > 1000) {
+            // Remove oldest entries
+            const sorted = keys.sort((a, b) => cache[a].timestamp - cache[b].timestamp);
+            const toRemove = sorted.slice(0, keys.length - 1000);
+            toRemove.forEach(key => delete cache[key]);
+        }
+        
+        await chrome.storage.local.set({'wd_translation_cache': cache});
+        console.log('Translation cached successfully');
+    } catch (error) {
+        console.log('Cache write failed:', error);
+    }
+}
+
+/**
+ * Get translation from cache
+ */
+async function getTranslationFromCache(key) {
+    try {
+        const result = await chrome.storage.local.get(['wd_translation_cache']);
+        const cache = result.wd_translation_cache || {};
+        const cached = cache[key] || null;
+        console.log('Cache lookup for key:', key, 'result:', cached);
+        return cached;
+    } catch (error) {
+        console.log('Cache read failed:', error);
+        return null;
+    }
+}
+
 
 function getHeatColorPoint(freqPercent) {
     if (!freqPercent)
@@ -81,7 +308,102 @@ function getHeatColorPoint(freqPercent) {
 }
 
 
-function renderBubble() {
+async function handleTranslation(text) {
+    console.log('Handling translation for text:', text);
+    const translationContainer = document.getElementById('wd_translation_container');
+    const translationTextElement = document.getElementById('wd_translation_text');
+    
+    if (!wd_translation_settings || !wd_translation_settings.enabled) {
+        console.log('Translation disabled or settings not available');
+        translationContainer.style.display = 'none';
+        return;
+    }
+    
+    // Show loading state
+    translationContainer.style.display = 'block';
+    translationTextElement.textContent = 'Loading...';
+    translationTextElement.className = 'wdTranslationText wdTranslationLoading';
+    
+    try {
+        const targetLang = wd_translation_settings.target_language || 'auto';
+        console.log('Translating to language:', targetLang);
+        const translation = await translateWithFallback(text, targetLang);
+        console.log('Final translation result:', translation);
+        
+        if (translation && translation !== text) {
+            translationTextElement.textContent = translation;
+            translationTextElement.className = 'wdTranslationText';
+        } else {
+            // Hide if no translation or same as original
+            console.log('No translation or same as original, hiding container');
+            translationContainer.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Translation error:', error);
+        translationTextElement.textContent = 'Translation unavailable';
+        translationTextElement.className = 'wdTranslationText wdTranslationError';
+        // Also log the error to the translation container for user visibility
+        translationTextElement.title = `Error: ${error.message}`;
+    }
+}
+
+async function handleTranslationDebounced(text) {
+    clearTimeout(translationTimeout);
+    
+    translationTimeout = setTimeout(async () => {
+        await handleTranslation(text);
+    }, TRANSLATION_DELAY);
+}
+
+async function translateWithFallback(text, targetLang) {
+    console.log('Attempting translation for:', text, 'to language:', targetLang);
+    
+    // Try primary translation method
+    let translation = await translateText(text, targetLang);
+    console.log('Primary translation result:', translation);
+    if (translation) return translation;
+    
+    // Fallback to different API endpoint
+    translation = await translateTextFallback(text, targetLang);
+    console.log('Fallback translation result:', translation);
+    if (translation) return translation;
+    
+    // Final fallback: show "click to translate" button
+    console.log('All translation methods failed, showing fallback button');
+    showTranslationFallback(text, targetLang);
+    return null;
+}
+
+function showTranslationFallback(text, targetLang) {
+    const translationContainer = document.getElementById('wd_translation_container');
+    const translationTextElement = document.getElementById('wd_translation_text');
+    
+    translationContainer.style.display = 'block';
+    translationTextElement.innerHTML = 
+        `<button class="wdAddButton" onclick="openTranslateTab('${text}', '${targetLang}')">
+            Click to translate in new tab
+        </button>`;
+}
+
+function openTranslateTab(text, targetLang) {
+    const url = `https://translate.google.com/#en/${targetLang}/${encodeURIComponent(text)}`;
+    chrome.runtime.sendMessage({wdm_new_tab_url: url});
+}
+
+// Test function for debugging translation issues
+async function testTranslation() {
+    console.log('Testing translation...');
+    const testText = 'hello';
+    const result = await translateText(testText, 'es');
+    console.log('Test translation result:', result);
+    return result;
+}
+
+// Run a test translation when the page loads (for debugging)
+// Uncomment the following line to run the test:
+// testTranslation();
+
+async function renderBubble() {
     if (!node_to_render_id)
         return;
     if (node_to_render_id === rendered_node_id)
@@ -113,6 +435,9 @@ function renderBubble() {
     bubbleDOM.style.left = Math.max(5, Math.floor((bcr.left + bcr.right) / 2) - 100) + 'px';
     bubbleDOM.style.display = 'block';
     rendered_node_id = node_to_render_id;
+
+    // NEW: Handle translation if enabled
+    await handleTranslationDebounced(wdSpanText);
 
     if (wd_enable_tts) {
         chrome.runtime.sendMessage({type: "tts_speak", word: wdSpanText});
@@ -425,6 +750,29 @@ function create_bubble() {
     freqSpan.textContent = "n/a";
     bubbleDOM.appendChild(freqSpan);
 
+    // NEW: Translation section
+    var translationContainer = document.createElement('div');
+    translationContainer.setAttribute('id', 'wd_translation_container');
+    translationContainer.setAttribute('class', 'wdTranslationContainer');
+    translationContainer.style.display = 'none';
+    
+    var translationLabel = document.createElement('div');
+    translationLabel.setAttribute('class', 'wdTranslationLabel');
+    translationLabel.textContent = 'Translation:';
+    translationContainer.appendChild(translationLabel);
+    
+    var translationText = document.createElement('div');
+    translationText.setAttribute('id', 'wd_translation_text');
+    translationText.setAttribute('class', 'wdTranslationText');
+    translationContainer.appendChild(translationText);
+    
+    var translationAttribution = document.createElement('div');
+    translationAttribution.setAttribute('class', 'wdTranslationAttribution');
+    translationAttribution.textContent = 'Powered by Google Translate';
+    translationContainer.appendChild(translationAttribution);
+    
+    bubbleDOM.appendChild(translationContainer);
+
     var addButton = document.createElement('button');
     addButton.setAttribute('class', 'wdAddButton');
     addButton.textContent = chrome.i18n.getMessage("menuItem");
@@ -482,7 +830,7 @@ function initForPage() {
         }
     });
 
-    chrome.storage.local.get(['words_discoverer_eng_dict', 'wd_online_dicts', 'wd_idioms', 'wd_hover_settings', 'wd_word_max_rank', 'wd_show_percents', 'wd_is_enabled', 'wd_user_vocabulary', 'wd_hl_settings', 'wd_black_list', 'wd_white_list', 'wd_enable_tts'], function (result) {
+    chrome.storage.local.get(['words_discoverer_eng_dict', 'wd_online_dicts', 'wd_idioms', 'wd_hover_settings', 'wd_word_max_rank', 'wd_show_percents', 'wd_is_enabled', 'wd_user_vocabulary', 'wd_hl_settings', 'wd_black_list', 'wd_white_list', 'wd_enable_tts', 'wd_translation_settings'], function (result) {
         dict_words = result.words_discoverer_eng_dict;
         dict_idioms = result.wd_idioms;
         wd_online_dicts = result.wd_online_dicts;
@@ -496,6 +844,14 @@ function initForPage() {
         is_enabled = result.wd_is_enabled;
         var black_list = result.wd_black_list;
         var white_list = result.wd_white_list;
+        wd_translation_settings = result.wd_translation_settings || {
+            enabled: true,
+            target_language: 'auto',
+            trigger_mode: 'hover',
+            show_attribution: true,
+            cache_duration: 86400000,
+            max_cache_size: 1000
+        };
 
         get_verdict(is_enabled, black_list, white_list, function (verdict) {
             chrome.runtime.sendMessage({wdm_verdict: verdict});

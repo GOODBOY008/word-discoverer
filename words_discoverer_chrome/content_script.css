@@ -125,3 +125,50 @@
     line-height: 65% !important;
 }
 
+.wdTranslationContainer {
+    width: 100% !important;
+    background-color: #f0f8ff !important;
+    border-top: 1px solid #ddd !important;
+    padding: 5px !important;
+    margin: 2px 0 !important;
+    font-family: Arial !important;
+    font-size: 11px !important;
+}
+
+.wdTranslationLabel {
+    color: #666 !important;
+    font-weight: bold !important;
+    font-size: 10px !important;
+    margin-bottom: 2px !important;
+    text-transform: uppercase !important;
+}
+
+.wdTranslationText {
+    color: #000 !important;
+    font-size: 12px !important;
+    font-weight: normal !important;
+    line-height: 1.2 !important;
+    margin: 2px 0 !important;
+    word-wrap: break-word !important;
+}
+
+.wdTranslationAttribution {
+    color: #999 !important;
+    font-size: 9px !important;
+    text-align: right !important;
+    margin-top: 2px !important;
+    font-style: italic !important;
+}
+
+.wdTranslationLoading {
+    color: #666 !important;
+    font-style: italic !important;
+    font-size: 11px !important;
+}
+
+.wdTranslationError {
+    color: #cc0000 !important;
+    font-size: 11px !important;
+    font-style: italic !important;
+}
+

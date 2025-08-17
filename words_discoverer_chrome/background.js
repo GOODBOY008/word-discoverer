@@ -443,7 +443,7 @@ function initialize_extension() {
         }
     });
 
-    chrome.storage.local.get(['words_discoverer_eng_dict', 'wd_hl_settings', 'wd_online_dicts', 'wd_hover_settings', 'wd_idioms', 'wd_show_percents', 'wd_is_enabled', 'wd_user_vocabulary', 'wd_black_list', 'wd_white_list', 'wd_gd_sync_enabled', 'wd_enable_tts'], function (result) {
+    chrome.storage.local.get(['words_discoverer_eng_dict', 'wd_hl_settings', 'wd_online_dicts', 'wd_hover_settings', 'wd_idioms', 'wd_show_percents', 'wd_is_enabled', 'wd_user_vocabulary', 'wd_black_list', 'wd_white_list', 'wd_gd_sync_enabled', 'wd_enable_tts', 'wd_translation_settings'], function (result) {
         load_eng_dictionary();
         load_idioms();
         wd_hl_settings = result.wd_hl_settings;
@@ -480,6 +480,18 @@ function initialize_extension() {
         if (typeof wd_hover_settings == 'undefined') {
             wd_hover_settings = {hl_hover: 'always', ow_hover: 'never'};
             chrome.storage.local.set({"wd_hover_settings": wd_hover_settings});
+        }
+        var wd_translation_settings = result.wd_translation_settings;
+        if (typeof wd_translation_settings == 'undefined') {
+            wd_translation_settings = {
+                enabled: true,
+                target_language: 'auto',
+                trigger_mode: 'hover',
+                show_attribution: true,
+                cache_duration: 86400000,
+                max_cache_size: 1000
+            };
+            chrome.storage.local.set({"wd_translation_settings": wd_translation_settings});
         }
         var wd_online_dicts = result.wd_online_dicts;
         if (typeof wd_online_dicts == 'undefined') {
